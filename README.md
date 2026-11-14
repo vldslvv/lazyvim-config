@@ -129,10 +129,16 @@ with a preview of recent output. Enter opens the selected terminal in the curren
 window; press `i` to type into it. Escape cancels the picker. Hidden terminal jobs
 keep running, and no new shell is created when selecting an existing terminal.
 
-New workspace terminals get labels such as `Shell · project-name` or
-`Codex · project-name`, using the Git root name of the terminal's starting
-directory (or the directory name outside Git). To rename any terminal, press
-`jk`, then Space → w → r and enter a label such as `backend server` or `tests`.
-Canceling or submitting an empty name keeps the current label. Labels appear in
-the picker alongside buffer numbers, remain stable when shell titles change,
-and last for the terminal buffer's lifetime.
+Terminal labels in bufferline show a purpose and the terminal's current title,
+such as `Shell · npm test` or `Backend · ~/project`. Labels fit within 32 display
+columns; long titles shorten from the left, keeping the purpose and the end of
+the title, such as `Shell · …/code/lazyvim-starter`.
+The title comes from Neovim's `b:term_title`:
+the shell or terminal program controls it, so it may change back to a directory
+when a command finishes. An empty title shows just the purpose. This uses only
+bufferline's `name_formatter`, without shell scripts or command tracking.
+
+To rename a terminal's purpose, press `jk`, then Space → w → r and enter a label
+such as `Backend` or `Tests`. Canceling or submitting an empty name keeps the
+current purpose. The terminal picker shows the purpose and searches shell titles
+and buffer names as well.

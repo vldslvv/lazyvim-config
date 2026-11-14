@@ -11,15 +11,13 @@ vim.keymap.set("i", "<a-cr>", "<cr><C-u>")
 
 -- Open and label terminals in the current editing window.
 local function open_workspace_terminal(cmd, label)
-  local cwd = vim.fn.getcwd()
-  local project = vim.fs.basename(vim.fs.root(cwd, ".git") or cwd)
   if cmd and cmd ~= "" then
     vim.cmd.terminal(cmd)
   else
     vim.cmd.terminal()
   end
 
-  vim.b.workspace_terminal_name = (label or "Shell") .. " · " .. project
+  vim.b.workspace_terminal_name = label or "Shell"
 
   vim.cmd.startinsert()
 end

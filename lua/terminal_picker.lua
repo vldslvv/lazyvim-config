@@ -9,7 +9,7 @@ function M.rename()
 
   vim.ui.input({
     prompt = "Terminal name: ",
-    default = vim.b[buf].workspace_terminal_name or vim.b[buf].term_title or "",
+    default = vim.b[buf].workspace_terminal_name or "Shell",
   }, function(name)
     if name == nil or not vim.api.nvim_buf_is_valid(buf) or vim.bo[buf].buftype ~= "terminal" then
       return
@@ -17,6 +17,7 @@ function M.rename()
     name = vim.trim(name)
     if name ~= "" then
       vim.b[buf].workspace_terminal_name = name
+      vim.cmd.redrawtabline()
     end
   end)
 end
