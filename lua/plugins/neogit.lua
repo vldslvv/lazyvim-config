@@ -16,7 +16,8 @@ local function focus_editing_window()
       local ft = vim.bo[buf].filetype
       local normal = vim.bo[buf].buftype == "" and not vim.startswith(ft, "Neogit")
       local dashboard = ft == "snacks_dashboard"
-      if api.nvim_win_get_config(win).relative == "" and (normal or dashboard) then
+      local terminal = vim.bo[buf].buftype == "terminal"
+      if api.nvim_win_get_config(win).relative == "" and (normal or dashboard or terminal) then
         api.nvim_set_current_tabpage(tab)
         api.nvim_set_current_win(win)
         return true
