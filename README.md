@@ -18,6 +18,11 @@ instead of Mason's HLS. Python projects should have a virtual environment;
 selected project interpreter. The optional terminal shortcuts require `codex`,
 `agent` (Cursor CLI), `claude`, or `opencode` on `PATH`, depending on the shortcut.
 
+DAP breakpoints are saved on file writes, buffer unloads, and normal Neovim exit,
+then restored when their files open (or when DAP first loads). Conditions, hit
+counts, and log messages are retained in `stdpath("state")/dap-breakpoints`, keyed
+by absolute file path; existing breakpoint keys and commands work unchanged.
+
 ## Configuration
 
 - `lua/config/lazy.lua`: plugin imports and the `vldslvv/LazyVim` fork on
@@ -32,6 +37,7 @@ selected project interpreter. The optional terminal shortcuts require `codex`,
   Set `vim.g.ai_terminal = "codex"` (default) or `"cursor"` to choose the assistant
   opened by `<leader>wa`; restart Neovim after changing it.
 - `lua/plugins/`: overrides and integrations for individual plugins.
+- `lua/local_plugins/`: local session restoration and DAP breakpoint persistence modules.
 - Language extras are imported in `lazy.lua`; the empty extras list in
   `lazyvim.json` does not mean language support is disabled.
 

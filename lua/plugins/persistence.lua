@@ -2,7 +2,7 @@ return {
   {
     "folke/persistence.nvim",
     init = function()
-      require("config.session_restore").setup()
+      require("local_plugins.session_restore").setup()
     end,
   },
 }

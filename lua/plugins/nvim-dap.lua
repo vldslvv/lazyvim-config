@@ -2,6 +2,9 @@ return {
   {
     "mfussenegger/nvim-dap",
     optional = true,
+    opts = function()
+      require("local_plugins.dap_breakpoints").setup()
+    end,
     dependencies = {
       "mfussenegger/nvim-dap-python",
       -- stylua: ignore
