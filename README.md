@@ -46,8 +46,10 @@ UseTab: Never
 IndentWidth: 4
 ```
 
-Blink is disabled in Markdown and plain text. Enter inserts a newline; Ctrl-Y
-accepts completion. `vim.g.blink_enable_auto_completion` is read when Blink loads;
+Blink is disabled in Markdown and plain text. In code, Enter accepts completion
+when the popup is visible; otherwise it inserts a newline. Ctrl-Y also accepts
+completion. Automatic popups are suppressed in comments and Git commit messages.
+`vim.g.blink_enable_auto_completion` is read when Blink loads;
 set it to false before loading for manual completion. `vim-illuminate` highlights
 LSP symbol references when a supporting server is attached; otherwise it matches
 case-sensitive whole words throughout the buffer, including comments and strings.

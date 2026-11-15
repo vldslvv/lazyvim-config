@@ -70,11 +70,14 @@ return {
         end
       end
 
-      -- Enter always inserts a newline, even when only ghost text is visible.
-      -- Keep the inherited Ctrl-Y mapping for explicitly accepting completion.
+      -- Enter accepts completion only while the popup is visible.
+      -- Cancel hidden suggestions before falling back to normal Enter behavior.
       opts.keymap = vim.tbl_extend("force", opts.keymap or {}, {
         ["<CR>"] = {
           function(cmp)
+            if cmp.is_menu_visible() then
+              return cmp.select_and_accept()
+            end
             cmp.cancel()
           end,
           "fallback",
