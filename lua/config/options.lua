@@ -50,6 +50,7 @@ vim.g.lazyvim_python_lsp = "pyright"
 vim.g.lazyvim_python_ruff = "ruff"
 
 -- Navigation and layout
+vim.g.root_spec = { "cwd" }
 vim.g.lazyvim_picker = "telescope"
 vim.g.neotree_width = 30
 
