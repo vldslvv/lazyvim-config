@@ -128,8 +128,9 @@ tab's Neo-tree visibility, source, root, and position. Pane metadata is stored
 inside the session file, so quitting an unused editor keeps the previous session
 intact. Existing sessions gain the full pane metadata when saved again.
 
-Run `python3 tests/session_restore.py` to check save/restore behavior across
-isolated Neovim processes using your installed plugins. Use `--plugins PATH` if
+Run `python3 tests/session_restore.py` to check that restored Neo-tree panes keep
+their saved sizes after splitting and closing an editing window. The check uses
+isolated Neovim processes with your installed plugins. Use `--plugins PATH` if
 they are outside the default Neovim data directory.
 
 To switch terminals, leave terminal mode with `jk`, then press Space → w → e.

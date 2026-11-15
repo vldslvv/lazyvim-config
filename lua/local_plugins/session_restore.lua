@@ -129,6 +129,10 @@ local function restore_tree(entry, win, done)
   if entry.position ~= "current" then
     -- Let Neo-tree adopt the saved split instead of creating another sidebar.
     require("neo-tree.ui.windows").get_location(entry.position).winid = win
+    -- Adoption skips NuiSplit's window setup. Restore its sizing constraints
+    -- so later splits and closes do not equalize the sidebar with file panes.
+    vim.wo[win].winfixwidth = true
+    vim.wo[win].winfixheight = true
   end
   require("neo-tree.ui.renderer").acquire_window(state)
   -- Navigate in series: filesystem navigation is debounced across all tabs.
