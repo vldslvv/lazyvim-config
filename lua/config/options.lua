@@ -28,8 +28,7 @@ vim.g.python_indent = {
 -- Completion and hover
 -- Set true for automatic LSP hover on CursorHold; manual K works either way.
 vim.g.autohover_enabled = false
--- Control the automatic completion popup from blink.
--- TODO: consider binding this to <leader>u. combination
+-- Initial automatic completion popup state; toggle at runtime with <leader>u.
 vim.g.blink_enable_auto_completion = true
 
 -- Language support

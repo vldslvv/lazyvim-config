@@ -2,6 +2,27 @@ return {
 
   {
     "saghen/blink.cmp",
+    init = function()
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "VeryLazy",
+        once = true,
+        callback = function()
+          Snacks.toggle({
+            name = "Completion Popup",
+            get = function()
+              return vim.g.blink_enable_auto_completion == true
+            end,
+            set = function(state)
+              vim.g.blink_enable_auto_completion = state
+              local cmp = package.loaded["blink.cmp"]
+              if not state and cmp then
+                cmp.cancel()
+              end
+            end,
+          }):map("<leader>u.")
+        end,
+      })
+    end,
     opts = function(_, opts)
       opts = opts or {}
 
@@ -46,28 +67,11 @@ return {
         return false
       end
 
-      -- Optional automatic popup control via global toggle:
-      -- Set vim.g.blink_enable_auto_completion = true (e.g. in your init.lua) BEFORE blink loads
-      -- to allow all default automatic triggers. If false or nil, completion is manual only.
-      local enable_auto = (vim.g.blink_enable_auto_completion == true)
-
       opts.completion = opts.completion or {}
       opts.completion.menu = opts.completion.menu or {}
-      if not enable_auto then
-        -- Manual-only mode: disable all automatic popup triggers
-        opts.completion.trigger = vim.tbl_deep_extend("force", opts.completion.trigger or {}, {
-          show_on_insert = false, -- do not open while just inserting
-          show_on_trigger_character = false, -- do not open after trigger chars like '.'
-          show_on_keyword = false, -- do not open after typing word fragments
-          show_on_backspace = false,
-          show_on_backspace_in_keyword = false,
-          show_on_backspace_after_accept = false,
-          show_on_backspace_after_insert_enter = false,
-        })
-      else
-        opts.completion.menu.auto_show = function()
-          return not is_prose_context()
-        end
+      -- Read the toggle on every request; Ctrl-Space can still open the menu manually.
+      opts.completion.menu.auto_show = function()
+        return vim.g.blink_enable_auto_completion == true and not is_prose_context()
       end
 
       -- Enter accepts completion only while the popup is visible.
