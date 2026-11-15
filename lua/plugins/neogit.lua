@@ -80,6 +80,7 @@ return {
       require("neogit").setup({
         disable_signs = false,
         integrations = { diffview = true },
+        commit_editor = { kind = "vsplit" },
         mappings = {
           status = {
             ["<cr>"] = open_file_keep_status,
