@@ -18,6 +18,11 @@ vim.opt.titlestring = "%{"
   .. "} - nvim"
 
 -- Editing behavior
+-- Shared escape combo for editing, terminals, and Telescope.
+vim.g.escape_combo = "jk"
+-- Time to complete key sequences, including the escape combo (milliseconds).
+vim.opt.timeoutlen = 300
+
 -- Disable formatting on save by default; filetype overrides may enable it.
 vim.g.autoformat = false
 vim.g.minipairs_disable = true
