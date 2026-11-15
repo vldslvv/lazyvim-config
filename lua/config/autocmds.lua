@@ -2,6 +2,14 @@
 require("config.autocmds.hover").setup()
 require("config.autocmds.neogit").setup()
 
+-- Reload externally changed files even while Neovim is unfocused.
+vim.opt.autoread = true
+vim.fn.timer_start(1000, function()
+  if vim.fn.mode() == "n" then
+    vim.cmd("checktime")
+  end
+end, { ["repeat"] = -1 })
+
 -- Keep terminal jobs available when a file replaces their window.
 vim.api.nvim_create_autocmd("TermOpen", {
   group = vim.api.nvim_create_augroup("workspace_terminals", { clear = true }),
