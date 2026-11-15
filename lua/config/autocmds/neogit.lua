@@ -1,6 +1,21 @@
 local M = {}
+local refresh_timer
 
 function M.setup()
+  if refresh_timer then
+    vim.fn.timer_stop(refresh_timer)
+  end
+  -- External working-tree edits don't trigger Neogit's .git watcher.
+  refresh_timer = vim.fn.timer_start(1000, function()
+    if vim.fn.mode() ~= "n" or vim.fn.getcmdwintype() ~= "" then
+      return
+    end
+    local status = package.loaded["neogit.buffers.status"]
+    if status and status.is_open() then
+      status.instance():dispatch_refresh(nil, "external_changes")
+    end
+  end, { ["repeat"] = -1 })
+
   vim.api.nvim_create_autocmd({ "FileType", "BufWinEnter" }, {
     group = vim.api.nvim_create_augroup("NeogitWrap", { clear = true }),
     callback = function(event)
