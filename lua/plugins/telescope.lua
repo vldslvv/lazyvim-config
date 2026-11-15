@@ -6,7 +6,7 @@ return {
       opts.defaults = opts.defaults or {}
       opts.pickers = opts.pickers or {}
 
-      opts.defaults.initial_mode = "normal"
+      opts.defaults.initial_mode = "insert"
 
       -- Use Telescope's normal selection actions, targeting the terminal that
       -- launched the picker instead of falling back to another editing window.
