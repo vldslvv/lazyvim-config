@@ -46,12 +46,9 @@ return {
       dap.listeners.after.event_initialized["dapui_config"] = function()
         dapui.open({ reset = true })
       end
-      dap.listeners.before.event_terminated["dapui_config"] = function()
-        dapui.close({})
-      end
-      dap.listeners.before.event_exited["dapui_config"] = function()
-        dapui.close({})
-      end
+      -- Keep output visible after exit; close the UI manually with <leader>du.
+      dap.listeners.before.event_terminated["dapui_config"] = nil
+      dap.listeners.before.event_exited["dapui_config"] = nil
     end,
   },
 }
