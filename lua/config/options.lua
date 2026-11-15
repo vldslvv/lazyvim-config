@@ -3,6 +3,8 @@
 
 -- Editor appearance
 vim.opt.wrap = true
+-- Let the terminal background show through the colorscheme.
+vim.g.transparent_background = true
 
 -- Keep absolute line numbers on by default; <leader>uL still toggles relative numbers.
 vim.opt.relativenumber = false
