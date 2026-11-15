@@ -126,12 +126,16 @@ explicit split commands. Persistence sessions preserve tab order, the selected
 tab and pane, Neogit status views (including splits and shared views), and each
 tab's Neo-tree visibility, source, root, and position. Pane metadata is stored
 inside the session file, so quitting an unused editor keeps the previous session
-intact. Existing sessions gain the full pane metadata when saved again.
+intact. Opening Neo-tree or Neogit starts session saving even without opening a
+file; visible utility panes are saved and restored too. Existing sessions gain
+the full pane metadata when saved again.
 
 Run `python3 tests/session_restore.py` to check that restored Neo-tree panes keep
-their saved sizes after splitting and closing an editing window. The check uses
-isolated Neovim processes with your installed plugins. Use `--plugins PATH` if
-they are outside the default Neovim data directory.
+their saved sizes after splitting and closing an editing window, and that the
+status line stays at the bottom in every restored tab. The check uses isolated
+Neovim processes with your installed plugins, including Noice. Use `--plugins PATH`
+if they are outside the default Neovim data directory. It also checks utility-only
+sessions and that an unused editor preserves the previous session.
 
 To switch terminals, leave terminal mode with `jk`, then press Space → w → e.
 The Telescope picker searches terminal titles and buffer names,

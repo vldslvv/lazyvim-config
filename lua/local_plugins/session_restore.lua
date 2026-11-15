@@ -1,3 +1,6 @@
+-- Requires folke/persistence.nvim; configured in lua/plugins/persistence.lua.
+-- Uses its PersistenceSavePre/LoadPre/LoadPost events and persistence.config
+-- save threshold to preserve utility panes alongside the native session.
 local M = {}
 
 local function windows(tab)
@@ -10,7 +13,9 @@ local function snapshot()
   local state = { version = 1, active_tab = vim.fn.tabpagenr(), tabs = {}, entries = {} }
   for tab_index, tab in ipairs(vim.api.nvim_list_tabpages()) do
     local active = vim.api.nvim_tabpage_get_win(tab)
-    local tab_state = { resize = vim.api.nvim_win_call(active, vim.fn.winrestcmd) }
+    local tab_state = vim.api.nvim_win_call(active, function()
+      return { resize = vim.fn.winrestcmd(), cmdheight = vim.o.cmdheight }
+    end)
     for win_index, win in ipairs(windows(tab)) do
       if win == active then
         tab_state.active_win = win_index
@@ -160,7 +165,14 @@ local function restore(state)
       if win and vim.api.nvim_win_is_valid(win) then
         vim.api.nvim_set_current_win(win)
         -- Neo-tree's open handler equalizes panes; put the saved sizes back.
+        -- Match the saved command-line space before resizing, so horizontal
+        -- panes keep their sizes. Older metadata predates cmdheight; Noice
+        -- normally detaches before saving and reserves one command-line row.
+        local cmdheight = vim.o.cmdheight
+        vim.o.cmdheight = tab_state.cmdheight or 1
         vim.cmd(tab_state.resize)
+        -- :resize can change cmdheight. Keep the current UI's statusline row.
+        vim.o.cmdheight = cmdheight
       end
     end
     local win = selected[state.active_tab]
@@ -201,13 +213,20 @@ function M.setup()
   -- Keep slots for nofile panes. Their contents are recreated by the plugins.
   vim.opt.sessionoptions:append({ "blank", "globals" })
   local group = vim.api.nvim_create_augroup("WorkspaceSessionRestore", { clear = true })
+  local min_files
   vim.api.nvim_create_autocmd("User", {
     group = group,
     pattern = "PersistenceSavePre",
     callback = function()
       -- A string global is written by :mksession itself, so skipped/failed saves
       -- cannot overwrite metadata belonging to the previous session file.
-      vim.g.WorkspaceSessionState = vim.json.encode(snapshot())
+      local state = snapshot()
+      vim.g.WorkspaceSessionState = vim.json.encode(state)
+      -- Reconstructible utility panes count as a session even without files.
+      -- Keep Persistence's normal threshold for an unused startup screen.
+      local config = require("persistence.config").options
+      min_files = min_files or config.need
+      config.need = #state.entries > 0 and 0 or min_files
     end,
   })
   vim.api.nvim_create_autocmd("User", {
