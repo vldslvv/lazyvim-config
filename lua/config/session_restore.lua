@@ -59,42 +59,47 @@ local function clear_placeholder_names(state)
       local buf = vim.api.nvim_win_get_buf(win)
       if
         entry.name == vim.api.nvim_buf_get_name(buf)
-        and vim.bo[buf].buftype == ""
-        and not vim.bo[buf].modified
+        and (vim.bo[buf].buftype == "" or vim.bo[buf].buftype == "nofile")
+        and vim.b[buf].neo_tree_source == nil
         and vim.api.nvim_buf_line_count(buf) == 1
         and vim.api.nvim_buf_get_lines(buf, 0, 1, false)[1] == ""
+        and not (vim.uv or vim.loop).fs_stat(entry.name)
       then
-        -- :mksession gives blank nofile panes their old names. Neogit deletes
-        -- buffers with those names on SessionLoadPost, which can close tabs.
+        -- :mksession gives blank nofile panes their old names and, with
+        -- localoptions, their old buffer type. Normalize both so restore can
+        -- reuse the slot. Never reset a live Neo-tree buffer on a warm load.
+        -- Neogit also deletes its old names on SessionLoadPost, closing tabs.
         vim.api.nvim_buf_set_name(buf, "")
+        vim.bo[buf].buftype = ""
+        vim.bo[buf].filetype = ""
+        -- EditorConfig can mark an empty placeholder modified by setting its
+        -- encoding on BufFilePost. There is no file or text here to preserve.
+        vim.bo[buf].modified = false
         vim.bo[buf].buflisted = false
       end
     end
   end
 end
 
-local function legacy_state()
-  -- Older sessions only recorded Neogit tabs in this sidecar. Reuse their empty
-  -- slots, but never replace a file using a window index from the old layout.
-  local path = vim.fn.stdpath("state") .. "/neogit-session-restore.json"
-  if vim.fn.filereadable(path) == 0 then
-    return
-  end
-  local ok, data = pcall(vim.json.decode, table.concat(vim.fn.readfile(path), "\n"))
-  local session = vim.fs.normalize(vim.v.this_session)
-  local entries = ok and type(data) == "table" and data[session] or nil
-  if type(entries) ~= "table" then
-    return
-  end
-  local state = snapshot()
-  state.entries = {}
-  for _, entry in ipairs(entries) do
-    if type(entry) == "table" and type(entry.cwd) == "string" then
-      entry.kind = "NeogitStatus"
-      state.entries[#state.entries + 1] = entry
+local function warn_unrestored_trees()
+  for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
+    for _, win in ipairs(windows(tab)) do
+      local buf = vim.api.nvim_win_get_buf(win)
+      local name = vim.api.nvim_buf_get_name(buf)
+      if
+        vim.fs.basename(name):match("^neo%-tree [%w_]+ %[%d+%]$")
+        and vim.b[buf].neo_tree_source == nil
+        and not (vim.uv or vim.loop).fs_stat(name)
+      then
+        vim.notify(
+          "Session pane restore: could not restore Neo-tree (missing or incompatible pane metadata). "
+            .. "Reopen Neo-tree and save a new session.",
+          vim.log.levels.WARN
+        )
+        return
+      end
     end
   end
-  return state
 end
 
 local function restore_neogit(entry, win, buffers)
@@ -158,6 +163,7 @@ local function restore(state)
     if win and vim.api.nvim_win_is_valid(win) then
       vim.api.nvim_set_current_win(win)
     end
+    warn_unrestored_trees()
   end
 
   local function next_entry(index)
@@ -205,6 +211,13 @@ function M.setup()
     pattern = "PersistenceLoadPre",
     callback = function()
       vim.g.WorkspaceSessionState = nil
+      -- Existing tree buffers can be reused by :source before our placeholders
+      -- are restored, leaving duplicate trees in saved file panes. Dispose the
+      -- old layout first, including hidden trees and trees in other tabs.
+      local manager = package.loaded["neo-tree.sources.manager"]
+      if manager then
+        manager.dispose()
+      end
     end,
   })
   vim.api.nvim_create_autocmd("User", {
@@ -212,15 +225,17 @@ function M.setup()
     pattern = "PersistenceLoadPost",
     callback = function()
       local ok, state = pcall(vim.json.decode, vim.g.WorkspaceSessionState or "")
-      if not ok then
-        state = legacy_state()
-      end
       if
-        type(state) ~= "table"
+        not ok
+        or type(state) ~= "table"
         or state.version ~= 1
         or type(state.tabs) ~= "table"
         or type(state.entries) ~= "table"
       then
+        vim.notify(
+          "Session pane restore: missing or incompatible pane metadata. Reopen utility panes and save a new session.",
+          vim.log.levels.WARN
+        )
         return
       end
       clear_placeholder_names(state)
