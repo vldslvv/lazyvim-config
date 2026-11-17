@@ -115,9 +115,13 @@ return {
       {
         "<leader>ee",
         function()
-          require("neo-tree.command").execute({ action = "focus" })
+          if vim.bo.filetype == "neo-tree" then
+            vim.cmd.wincmd("p")
+          else
+            require("neo-tree.command").execute({ action = "focus" })
+          end
         end,
-        desc = "Focus NeoTree",
+        desc = "Focus NeoTree / Previous Window",
       },
     },
   },
