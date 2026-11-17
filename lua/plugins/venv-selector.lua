@@ -1,6 +1,19 @@
 return {
   {
     "linux-cultist/venv-selector.nvim",
+    opts = {
+      options = {
+        statusline_func = {
+          lualine = function()
+            local venv = require("venv-selector").venv()
+            if not venv or venv == "" then
+              return ""
+            end
+            return "󰈺 " .. venv .. " "
+          end,
+        },
+      },
+    },
     config = function(_, opts)
       local selector = require("venv-selector")
       selector.setup(opts)
