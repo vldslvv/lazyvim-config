@@ -10,6 +10,8 @@ return {
         return kind ~= "terminal"
       end, opts.open_files_do_not_replace_types or require("neo-tree.defaults").open_files_do_not_replace_types)
       opts.filesystem = opts.filesystem or {}
+      -- Keep Neovim's cwd in sync with the tree root.
+      opts.filesystem.bind_to_cwd = true
       -- Refresh when files or directories change outside Neovim.
       opts.filesystem.use_libuv_file_watcher = true
       opts.filesystem.filtered_items = vim.tbl_deep_extend("force", opts.filesystem.filtered_items or {}, {
