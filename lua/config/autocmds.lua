@@ -5,8 +5,21 @@ require("config.autocmds.neogit").setup()
 -- Reload externally changed files even while Neovim is unfocused.
 vim.opt.autoread = true
 vim.fn.timer_start(1000, function()
-  if vim.fn.mode() == "n" then
+  local mode = vim.fn.mode()
+  if mode == "n" then
     vim.cmd("checktime")
+  elseif mode == "t" then
+    -- Defer checks that could prompt about unsaved edits or missing files.
+    for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+      local buf = vim.api.nvim_win_get_buf(win)
+      local options = vim.bo[buf]
+      if options.buftype == "" and not options.modified and vim.fn.getbufvar(buf, "&autoread") == 1 then
+        local name = vim.api.nvim_buf_get_name(buf)
+        if vim.fn.filereadable(name) == 1 then
+          vim.cmd.checktime(tostring(buf))
+        end
+      end
+    end
   end
 end, { ["repeat"] = -1 })
 
